@@ -3,6 +3,7 @@ package com.wiredbraincoffee.product_api_functional.handler;
 
 import com.wiredbraincoffee.product_api_functional.model.Product;
 import com.wiredbraincoffee.product_api_functional.repository.ProductRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -46,8 +47,20 @@ public class ProductHandler {
                                 .body(fromValue(product))
                 )
                 .switchIfEmpty(notFound);
-
     }
 
+
+
+                        // Add a product
+    public Mono<ServerResponse> saveProduct(ServerRequest serverRequest){
+        Mono<Product> productMono = serverRequest.bodyToMono(Product.class);
+
+        return productMono
+                .flatMap(product ->
+                        ServerResponse.status(HttpStatus.CREATED)
+                                .contentType(APPLICATION_JSON)
+                                .body(productRepository.save(product),Product.class)
+                        );
+    }
 
 }
