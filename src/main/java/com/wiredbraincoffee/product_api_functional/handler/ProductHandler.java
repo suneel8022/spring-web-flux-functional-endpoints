@@ -3,6 +3,7 @@ package com.wiredbraincoffee.product_api_functional.handler;
 
 import com.wiredbraincoffee.product_api_functional.model.Product;
 import com.wiredbraincoffee.product_api_functional.repository.ProductRepository;
+import org.jgrapht.util.RadixSort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -83,9 +84,24 @@ public class ProductHandler {
                                 .contentType(APPLICATION_JSON)
                                 .body(productRepository.save(product),Product.class)
                         )
-                .switchIfEmpty(notFound)
+                .switchIfEmpty(notFound);
+    }
 
 
+                        // delete a product
+
+    public Mono<ServerResponse> deleteProduct(ServerRequest serverRequest){
+        String id = serverRequest.pathVariable("id");
+        Mono<Product> productMono = this.productRepository.findById(id);
+
+        Mono<ServerResponse> notFound = ServerResponse.notFound().build();
+
+        return productMono
+                .flatMap(existingProduct ->
+                        ServerResponse.ok()
+                                .build(productRepository.delete(existingProduct))
+                        )
+                .switchIfEmpty(notFound);
     }
 
 }
