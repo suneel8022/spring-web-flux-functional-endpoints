@@ -63,4 +63,29 @@ public class ProductHandler {
                         );
     }
 
+
+                        // update a product
+
+    public Mono<ServerResponse> updateProduct(ServerRequest serverRequest){
+        String id = serverRequest.pathVariable("id");
+        Mono<Product> existingProductMono = this.productRepository.findById(id);
+        Mono<Product> productMono = serverRequest.bodyToMono(Product.class);
+
+
+        Mono<ServerResponse> notFound = ServerResponse.notFound().build();
+
+        return productMono.zipWith(existingProductMono,
+                (product, existingProduct) ->
+                        new Product(existingProduct.getId(),product.getName(),product.getPrice())
+                )
+                .flatMap(product ->
+                        ServerResponse.ok()
+                                .contentType(APPLICATION_JSON)
+                                .body(productRepository.save(product),Product.class)
+                        )
+                .switchIfEmpty(notFound)
+
+
+    }
+
 }
