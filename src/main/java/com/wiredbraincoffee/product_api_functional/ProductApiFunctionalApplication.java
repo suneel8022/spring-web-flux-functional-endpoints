@@ -1,12 +1,20 @@
 package com.wiredbraincoffee.product_api_functional;
 
+import com.wiredbraincoffee.product_api_functional.handler.ProductHandler;
 import com.wiredbraincoffee.product_api_functional.model.Product;
 import com.wiredbraincoffee.product_api_functional.repository.ProductRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
+
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import static org.springframework.web.reactive.function.server.RequestPredicates.*;
+
 
 @SpringBootApplication
 public class ProductApiFunctionalApplication {
@@ -33,4 +41,22 @@ public class ProductApiFunctionalApplication {
 		};
 
 	}
+
+					// defining routes
+
+	@Bean
+	RouterFunction<ServerResponse> routes(ProductHandler productHandler){
+		return route().
+				GET("/products/events",accept(MediaType.TEXT_EVENT_STREAM),productHandler::getProductEvents)
+				.GET("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::getProduct)
+				.GET("/products",accept(MediaType.APPLICATION_JSON),productHandler::getAllProducts)
+				.PUT("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::updateProduct)
+				.POST("/products",contentType(MediaType.APPLICATION_JSON),productHandler::saveProduct)
+				.DELETE("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::deleteProduct)
+				.DELETE("/products",accept(MediaType.APPLICATION_JSON),productHandler::deleteAllProducts)
+				.build();
+	}
+
+
+
 }
