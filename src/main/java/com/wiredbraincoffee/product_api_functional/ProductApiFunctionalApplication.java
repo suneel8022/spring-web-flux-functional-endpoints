@@ -42,21 +42,36 @@ public class ProductApiFunctionalApplication {
 
 	}
 
-					// defining routes
+					// defining routes using chain routing
+
+//	RouterFunction<ServerResponse> routes(ProductHandler productHandler){
+//		return route().
+//				GET("/products/events",accept(MediaType.TEXT_EVENT_STREAM),productHandler::getProductEvents)
+//				.GET("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::getProduct)
+//				.GET("/products",accept(MediaType.APPLICATION_JSON),productHandler::getAllProducts)
+//				.PUT("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::updateProduct)
+//				.POST("/products",contentType(MediaType.APPLICATION_JSON),productHandler::saveProduct)
+//				.DELETE("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::deleteProduct)
+//				.DELETE("/products",accept(MediaType.APPLICATION_JSON),productHandler::deleteAllProducts)
+//				.build();
+//	}
 
 	@Bean
 	RouterFunction<ServerResponse> routes(ProductHandler productHandler){
-		return route().
-				GET("/products/events",accept(MediaType.TEXT_EVENT_STREAM),productHandler::getProductEvents)
-				.GET("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::getProduct)
-				.GET("/products",accept(MediaType.APPLICATION_JSON),productHandler::getAllProducts)
-				.PUT("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::updateProduct)
-				.POST("/products",contentType(MediaType.APPLICATION_JSON),productHandler::saveProduct)
-				.DELETE("/products/{id}",accept(MediaType.APPLICATION_JSON),productHandler::deleteProduct)
-				.DELETE("/products",accept(MediaType.APPLICATION_JSON),productHandler::deleteAllProducts)
-				.build();
+		return route()
+				.path("/products",
+						builder -> builder
+								.nest(accept(MediaType.APPLICATION_JSON).or(contentType(MediaType.APPLICATION_JSON)).or(accept(MediaType.TEXT_EVENT_STREAM)),
+										nestedBuilder -> nestedBuilder
+												.GET("/events",productHandler::getProductEvents)
+												.GET("/{id}",productHandler::getProduct)
+												.GET(productHandler::getAllProducts)
+												.PUT("/{id}", productHandler::updateProduct)
+												.POST(productHandler::saveProduct)
+								)
+								.DELETE("/{id}", productHandler::deleteProduct)
+								.DELETE(productHandler::deleteAllProducts)
+				).build();
 	}
-
-
 
 }
