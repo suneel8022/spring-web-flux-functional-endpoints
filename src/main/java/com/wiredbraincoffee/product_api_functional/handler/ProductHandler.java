@@ -2,6 +2,7 @@ package com.wiredbraincoffee.product_api_functional.handler;
 
 
 import com.wiredbraincoffee.product_api_functional.model.Product;
+import com.wiredbraincoffee.product_api_functional.model.ProductEvent;
 import com.wiredbraincoffee.product_api_functional.repository.ProductRepository;
 import org.jgrapht.util.RadixSort;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.web.reactive.function.BodyInserters.fromValue;
@@ -103,5 +106,30 @@ public class ProductHandler {
                         )
                 .switchIfEmpty(notFound);
     }
+
+
+
+                        // delete all products
+
+    public Mono<ServerResponse> deleteAllProducts(ServerRequest serverRequest){
+        return ServerResponse.ok()
+                .build(productRepository.deleteAll());
+    }
+
+
+                        // adding product events
+
+    public Mono<ServerResponse> getProductEvents(ServerRequest serverRequest){
+        Flux<ProductEvent> eventsFlux = Flux.interval(Duration.ofSeconds(1))
+                .map(val -> new ProductEvent(val, "Product Event"));
+
+        return ServerResponse.ok()
+                .contentType(MediaType.TEXT_EVENT_STREAM)
+                .body(eventsFlux, ProductEvent.class);
+
+
+    }
+
+
 
 }
